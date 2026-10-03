@@ -8,8 +8,8 @@ from groq import Groq
 tavily = TavilyClient(api_key=st.secrets["TAVILY_API_KEY"])
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
-# Groq Aktif Qwen Modeli (Derin analiz ve mantıksal çıkarım için)
-GROQ_MODEL = "qwen-2.5-coder-32b"
+# Groq Ana Amiral Gemisi ve Kesintisiz Çalışan Modeli
+GROQ_MODEL = "llama-3.3-70b-versatile"
 
 st.set_page_config(page_title='Turgeo.AI Workspace', layout='wide', initial_sidebar_state='expanded')
 
@@ -116,7 +116,7 @@ with st.sidebar:
     if st.button('Clear Context', use_container_width=True):
         st.session_state.messages = []
         st.rerun()
-    st.markdown("<div style='margin-top: 20px; padding: 10px; font-size: 12px; color: #888;'>Engine: Qwen 2.5 Coder 32B<br>Cloud Deployed</div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-top: 20px; padding: 10px; font-size: 12px; color: #888;'>Engine: Llama 3.3 70B (Groq)<br>Cloud Deployed</div>", unsafe_allow_html=True)
 
 if 'messages' not in st.session_state:
     st.session_state.messages = []
