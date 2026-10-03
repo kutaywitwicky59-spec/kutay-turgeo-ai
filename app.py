@@ -2,14 +2,18 @@ import streamlit as st
 import html
 import re
 from tavily import TavilyClient
-from groq import Groq
+from openai import OpenAI
 
 # Bulut Güvenli API İstemcileri
 tavily = TavilyClient(api_key=st.secrets["TAVILY_API_KEY"])
-client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
-# Groq Ana Amiral Gemisi ve Kesintisiz Çalışan Modeli
-GROQ_MODEL = "llama-3.3-70b-versatile"
+# OpenRouter üzerinden Orijinal Qwen 2.5 72B Modeli
+client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=st.secrets["OPENROUTER_API_KEY"],
+)
+
+QWEN_MODEL = "qwen/qwen-2.5-72b-instruct"
 
 st.set_page_config(page_title='Turgeo.AI Workspace', layout='wide', initial_sidebar_state='expanded')
 
@@ -73,7 +77,6 @@ def robust_web_search(query: str, max_results: int = 5):
     return results, display_links
 
 def analyze_search_need(user_prompt: str, chat_history: list) -> str:
-    # Kesin Güvenlik Filtresi: Selamlaşma ve basit kelimelerde asla arama yapma
     greetings = ["hi", "hello", "merhaba", "selam", "hey", "günaydın", "iyi akşamlar", "naber"]
     if user_prompt.lower().strip() in greetings:
         return "NONE"
@@ -93,7 +96,7 @@ def analyze_search_need(user_prompt: str, chat_history: list) -> str:
     
     try:
         res = client.chat.completions.create(
-            model=GROQ_MODEL,
+            model=QWEN_MODEL,
             messages=[
                 {'role': 'system', 'content': system_eval},
                 {'role': 'user', 'content': prompt_payload}
@@ -116,7 +119,7 @@ with st.sidebar:
     if st.button('Clear Context', use_container_width=True):
         st.session_state.messages = []
         st.rerun()
-    st.markdown("<div style='margin-top: 20px; padding: 10px; font-size: 12px; color: #888;'>Engine: Llama 3.3 70B (Groq)<br>Cloud Deployed</div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-top: 20px; padding: 10px; font-size: 12px; color: #888;'>Engine: Qwen 2.5 72B Instruct<br>Powered by OpenRouter</div>", unsafe_allow_html=True)
 
 if 'messages' not in st.session_state:
     st.session_state.messages = []
@@ -180,7 +183,7 @@ if is_generating:
     
     try:
         stream = client.chat.completions.create(
-            model=GROQ_MODEL,
+            model=QWEN_MODEL,
             messages=chat_messages,
             stream=True,
             temperature=0.2,
