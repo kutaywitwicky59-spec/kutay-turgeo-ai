@@ -8,6 +8,9 @@ from groq import Groq
 tavily = TavilyClient(api_key=st.secrets["TAVILY_API_KEY"])
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
+# Groq üzerindeki Qwen 2.5 modeli
+GROQ_MODEL = "qwen-2.5-32b"
+
 st.set_page_config(page_title='Turgeo.AI Workspace', layout='wide', initial_sidebar_state='expanded')
 
 st.markdown('''
@@ -70,6 +73,11 @@ def robust_web_search(query: str, max_results: int = 5):
     return results, display_links
 
 def analyze_search_need(user_prompt: str, chat_history: list) -> str:
+    # Kesin Güvenlik Filtresi: Selamlaşma ve basit kelimelerde asla arama yapma
+    greetings = ["hi", "hello", "merhaba", "selam", "hey", "günaydın", "iyi akşamlar", "naber"]
+    if user_prompt.lower().strip() in greetings:
+        return "NONE"
+
     context_msgs = chat_history[-3:] if len(chat_history) >= 3 else chat_history
     history_str = "\n".join([f"{m['role']}: {m['content']}" for m in context_msgs])
     
@@ -85,7 +93,7 @@ def analyze_search_need(user_prompt: str, chat_history: list) -> str:
     
     try:
         res = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model=GROQ_MODEL,
             messages=[
                 {'role': 'system', 'content': system_eval},
                 {'role': 'user', 'content': prompt_payload}
@@ -108,7 +116,7 @@ with st.sidebar:
     if st.button('Clear Context', use_container_width=True):
         st.session_state.messages = []
         st.rerun()
-    st.markdown("<div style='margin-top: 20px; padding: 10px; font-size: 12px; color: #888;'>Engine: Llama 3.3 70B (Groq)<br>Cloud Deployed</div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-top: 20px; padding: 10px; font-size: 12px; color: #888;'>Engine: Qwen 2.5 (32B via Groq)<br>Cloud Deployed</div>", unsafe_allow_html=True)
 
 if 'messages' not in st.session_state:
     st.session_state.messages = []
@@ -146,7 +154,7 @@ if is_generating:
             search_keywords = analyze_search_need(user_prompt, st.session_state.messages[:-1])
             
             if search_keywords != "NONE":
-                status.update(label=f"Searching web for: ''{search_keywords}''", state="running", expanded=False)
+                status.update(label=f"Searching web for: ''{search_keywords}''", state="running", expanded=False) gereksiz = True
                 try:
                     results, display_links = robust_web_search(search_keywords, max_results=5)
                             
@@ -172,7 +180,7 @@ if is_generating:
     
     try:
         stream = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model=GROQ_MODEL,
             messages=chat_messages,
             stream=True,
             temperature=0.2,
