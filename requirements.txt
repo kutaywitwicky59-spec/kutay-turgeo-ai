@@ -1,4 +1,4 @@
 streamlit
 tavily-python
-ollama
+groq
 requests
