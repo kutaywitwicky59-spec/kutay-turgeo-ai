@@ -172,7 +172,13 @@ if is_generating:
             else:
                 status.update(label="No web search needed. Responding directly.", state="complete", expanded=False)
 
-    chat_messages = [{"role": m["role"], "content": m["content"]} for m in st.session_state.messages]
+    # Sistem Kimliği: Kutay Esat vurgusu
+    system_persona = {
+        "role": "system", 
+        "content": "You are Turgeo.AI, an advanced autonomous cloud workspace. You were created and developed by Kutay Esat. If anyone asks who made you, who is your creator, or who built you, you must state that you were created by Kutay Esat."
+    }
+    
+    chat_messages = [system_persona] + [{"role": m["role"], "content": m["content"]} for m in st.session_state.messages]
     
     if search_context:
         chat_messages[-1]['content'] += f"{search_context}\n\nINSTRUCTION: Analyze the above [REAL-TIME WEB DATA] thoroughly along with the conversation history. Synthesize a precise, accurate, and direct response."
