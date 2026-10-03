@@ -1,11 +1,12 @@
 import streamlit as st
-import ollama
 import html
 import re
 from tavily import TavilyClient
+from groq import Groq
 
-# Tavily API İstemcisi
-tavily = TavilyClient(api_key="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")
+# Bulut Güvenli API İstemcileri (Secrets üzerinden okunur)
+tavily = TavilyClient(api_key=st.secrets["TAVILY_API_KEY"])
+client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
 st.set_page_config(page_title='Turgeo.AI Workspace', layout='wide', initial_sidebar_state='expanded')
 
@@ -83,15 +84,16 @@ def analyze_search_need(user_prompt: str, chat_history: list) -> str:
     prompt_payload = f"Chat History:\n{history_str}\n\nLatest Prompt: {user_prompt}"
     
     try:
-        res = ollama.chat(
-            model='turgeo',
+        res = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
             messages=[
                 {'role': 'system', 'content': system_eval},
                 {'role': 'user', 'content': prompt_payload}
             ],
-            options={'temperature': 0.0, 'num_predict': 40}
+            temperature=0.0,
+            max_tokens=40
         )
-        output = res['message']['content'].strip()
+        output = res.choices[0].message.content.strip()
         cleaned = output.replace('"', '').replace("'", "").strip()
         if 'NONE' in cleaned.upper() or len(cleaned) < 2:
             return "NONE"
@@ -106,7 +108,7 @@ with st.sidebar:
     if st.button('Clear Context', use_container_width=True):
         st.session_state.messages = []
         st.rerun()
-    st.markdown("<div style='margin-top: 20px; padding: 10px; font-size: 12px; color: #888;'>Engine: Qwen 2.5 (14B)<br>Cloud Ready</div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-top: 20px; padding: 10px; font-size: 12px; color: #888;'>Engine: Llama 3.3 (Groq)<br>Cloud Deployed</div>", unsafe_allow_html=True)
 
 if 'messages' not in st.session_state:
     st.session_state.messages = []
@@ -115,7 +117,7 @@ is_generating = len(st.session_state.messages) > 0 and st.session_state.messages
 
 if len(st.session_state.messages) == 0:
     st.markdown("<h1 style='text-align: center; color: #e3e3e3; margin-bottom: 10px;'>Turgeo.AI</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #888; margin-bottom: 30px;'>Qwen 2.5 Autonomous Knowledge System</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #888; margin-bottom: 30px;'>Cloud Autonomous Knowledge System</p>", unsafe_allow_html=True)
 
 prompt = st.chat_input('Message Turgeo.AI...', disabled=is_generating)
 
@@ -169,15 +171,19 @@ if is_generating:
     full_response = ''
     
     try:
-        stream = ollama.chat(
-            model='turgeo', 
-            messages=chat_messages, 
-            stream=True, 
-            options={'temperature': 0.2, 'num_predict': 4096, 'top_p': 0.9}
+        stream = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=chat_messages,
+            stream=True,
+            temperature=0.2,
+            max_tokens=4096,
+            top_p=0.9
         )
         for chunk in stream:
-            full_response += chunk['message']['content']
-            response_placeholder.markdown(full_response + " ▌")
+            delta = chunk.choices[0].delta.content
+            if delta:
+                full_response += delta
+                response_placeholder.markdown(full_response + " ▌")
             
         response_placeholder.markdown(full_response)
         
