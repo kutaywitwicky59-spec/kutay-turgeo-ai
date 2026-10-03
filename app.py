@@ -8,7 +8,7 @@ from groq import Groq
 tavily = TavilyClient(api_key=st.secrets["TAVILY_API_KEY"])
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
-# Groq aktif modeli
+# Groq aktif ve standart modeli
 GROQ_MODEL = "llama-3.1-8b-instant"
 
 st.set_page_config(page_title='Turgeo.AI Workspace', layout='wide', initial_sidebar_state='expanded')
