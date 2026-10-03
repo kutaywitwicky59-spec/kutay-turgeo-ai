@@ -85,7 +85,7 @@ def analyze_search_need(user_prompt: str, chat_history: list) -> str:
     
     try:
         res = client.chat.completions.create(
-            model="llama-3.1-70b-versatile",
+            model="llama-3.3-70b-versatile",
             messages=[
                 {'role': 'system', 'content': system_eval},
                 {'role': 'user', 'content': prompt_payload}
@@ -108,7 +108,7 @@ with st.sidebar:
     if st.button('Clear Context', use_container_width=True):
         st.session_state.messages = []
         st.rerun()
-    st.markdown("<div style='margin-top: 20px; padding: 10px; font-size: 12px; color: #888;'>Engine: Llama 3.1 70B (Groq)<br>Cloud Deployed</div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-top: 20px; padding: 10px; font-size: 12px; color: #888;'>Engine: Llama 3.3 70B (Groq)<br>Cloud Deployed</div>", unsafe_allow_html=True)
 
 if 'messages' not in st.session_state:
     st.session_state.messages = []
@@ -172,7 +172,7 @@ if is_generating:
     
     try:
         stream = client.chat.completions.create(
-            model="llama-3.1-70b-versatile",
+            model="llama-3.3-70b-versatile",
             messages=chat_messages,
             stream=True,
             temperature=0.2,
