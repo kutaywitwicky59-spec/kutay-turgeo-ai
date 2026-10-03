@@ -154,7 +154,7 @@ if is_generating:
             search_keywords = analyze_search_need(user_prompt, st.session_state.messages[:-1])
             
             if search_keywords != "NONE":
-                status.update(label=f"Searching web for: ''{search_keywords}''", state="running", expanded=False) gereksiz = True
+                status.update(label=f"Searching web for: ''{search_keywords}''", state="running", expanded=False)
                 try:
                     results, display_links = robust_web_search(search_keywords, max_results=5)
                             
